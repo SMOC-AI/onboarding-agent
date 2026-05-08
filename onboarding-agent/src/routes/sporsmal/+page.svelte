@@ -22,7 +22,7 @@
 	let input = '';
 	let answers: string[] = [];
 
-	$: companyName = page.url.searchParams.get('companyName')
+	$: companyName = page.url.searchParams.get('companyName') || 'selskapet deres';
 	$: isDone = step >= questions.length;
 	$: isValid = isFilled(input);
 
@@ -66,7 +66,8 @@
 				</form>
 			</div>
 		{:else}
-			<p>ferdig</p>
+			<!-- TODO: Lag et bedre svar som  viser at infoen er lagret og at bruker vil bli kontaktet-->
+			<p>Takk for svar!</p>
 		{/if}
 	</div>
 </section>
