@@ -10,6 +10,7 @@
 	</div>
 </section>
 
+<!-- Styling for det meste generert av AI for å slippe hacking fram og tilbake -->
 <style>
 	.intro {
 		flex: 1;
