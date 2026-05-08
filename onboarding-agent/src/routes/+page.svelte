@@ -1,60 +1,45 @@
-<script lang="ts">
-	import welcomeFallback from '$lib/images/svelte-welcome.png';
-	import welcome from '$lib/images/svelte-welcome.webp';
-
-	import Counter from './Counter.svelte';
-</script>
-
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<title>SMOC.AI Onboarding</title>
+	<meta name="description" content="Start onboarding for company setup" />
 </svelte:head>
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcomeFallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
+<section class="intro">
+	<div class="intro-card">
+		<h1>Hei, hyggelig å møte deg! <br>La oss bli kjent.</h1>
+		<input id="company-name" name="companyName" type="text" placeholder="Hva heter firmaet ditt?" />
+	</div>
 </section>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
+	.intro {
+		flex: 1;
+		display: grid;
+		place-items: center;
+		padding: 1rem;
+	}
+
+	.intro-card {
+		width: 100%;
+		max-width: 32rem;
+		padding: 0.5rem 0;
 	}
 
 	h1 {
-		width: 100%;
+		margin: 0 0 1.25rem;
+		font-size: 1.75rem;
+		text-align: left;
 	}
 
-	.welcome {
-		display: block;
-		position: relative;
+	input {
 		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
+		padding: 0.7rem 0.85rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgb(0 0 0 / 15%);
+		background: rgb(255 255 255 / 95%);
 	}
 
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
+	input:focus {
+		outline: 2px solid rgb(64 117 166 / 40%);
+		outline-offset: 1px;
 	}
 </style>
