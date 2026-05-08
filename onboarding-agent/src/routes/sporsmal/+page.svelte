@@ -1,22 +1,18 @@
+<script lang="ts">
+	import { page } from '$app/state';
+
+	$: companyName = page.url.searchParams.get('companyName')
+</script>
+
 <svelte:head>
 	<title>SMOC.AI Onboarding</title>
 </svelte:head>
 
 <section class="intro">
-	<h1>Herlig! 🥳 <br>Nå trenger vi litt mer informasjon om selskapet.</h1>
+	<div class="intro-card">
+		<h1>Herlig! 🥳</h1>
+		<p class="subtitle">
+			Nå trenger vi litt mer informasjon om {companyName}. Svar kort og konkret, så får vi satt opp en god profil.
+		</p>
+	</div>
 </section>
-
-<style>
-	.intro {
-		flex: 1;
-		display: grid;
-		place-items: center;
-		padding: 1rem;
-	}
-
-	h1 {
-		margin: 0 0 1.25rem;
-		font-size: 1.75rem;
-		text-align: left;
-	}
-</style>
