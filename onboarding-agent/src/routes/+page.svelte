@@ -1,60 +1,39 @@
 <script lang="ts">
-	import welcomeFallback from '$lib/images/svelte-welcome.png';
-	import welcome from '$lib/images/svelte-welcome.webp';
+	import { goto } from '$app/navigation';
+	import { fade } from 'svelte/transition';
+	import ArrowInput from '$lib/components/ArrowInput.svelte';
+	import { isFilled } from '$lib/utils/validation';
 
-	import Counter from './Counter.svelte';
+	let companyName = '';
+	$: isValid = isFilled(companyName, 2);
+
+	function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		if (!isValid) return;
+
+		const name = encodeURIComponent(companyName.trim());
+		goto(`/sporsmal?companyName=${name}`);
+	}
 </script>
 
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<title>SMOC.AI Onboarding</title>
+	<meta name="description" content="Start onboarding for company setup" />
 </svelte:head>
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcomeFallback} alt="Welcome" />
-			</picture>
-		</span>
+<section class="intro">
+	<div class="intro-card" in:fade={{ duration: 300 }}>
+		<h1>Hei, hyggelig å møte deg! <br/>La oss bli kjent.</h1>
+		<p class="subtitle">Skal vi starte med navn?😉</p>
 
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
+		<form on:submit={handleSubmit}>
+			<ArrowInput
+				name="companyName"
+				placeholder="Navn på selskapet"
+				minLength={2}
+				disabled={!isValid}
+				bind:value={companyName}
+			/>
+		</form>
+	</div>
 </section>
-
-<style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
-</style>
