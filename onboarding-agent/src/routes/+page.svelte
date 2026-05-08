@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import ArrowInput from '$lib/components/ArrowInput.svelte';
 
 	let companyName = '';
 	$: isValid = companyName.trim().length >= 2;
@@ -24,18 +25,13 @@
 		<p class="subtitle">Skal vi starte med navn?😉</p>
 
 		<form on:submit={handleSubmit}>
-			<div class="input-row">
-				<input
-					name="companyName"
-					placeholder="Navn på selskapet"
-					bind:value={companyName}
-					required
-				/>
-
-				<button class="submit-circle" type="submit" disabled={!isValid}>
-					<img class="submit-image" src="/icons/whiteArrow.png" alt="pil"/>
-				</button>
-			</div>
+			<ArrowInput
+				name="companyName"
+				placeholder="Navn på selskapet"
+				minLength={2}
+				disabled={!isValid}
+				bind:value={companyName}
+			/>
 		</form>
 	</div>
 </section>
