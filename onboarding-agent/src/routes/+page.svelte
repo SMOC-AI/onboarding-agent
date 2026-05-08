@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ArrowInput from '$lib/components/ArrowInput.svelte';
+	import { isFilled } from '$lib/utils/validation';
 
 	let companyName = '';
-	$: isValid = companyName.trim().length >= 2;
+	$: isValid = isFilled(companyName, 2);
 
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
