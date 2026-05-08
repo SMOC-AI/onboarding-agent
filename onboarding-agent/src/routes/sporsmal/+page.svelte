@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { fade, slide } from 'svelte/transition';
 	import ArrowInput from '$lib/components/ArrowInput.svelte';
 	import { isFilled } from '$lib/utils/validation';
 
@@ -40,21 +41,21 @@
 </svelte:head>
 
 <section class="intro">
-	<div class="intro-card">
+	<div class="intro-card" in:fade={{ duration: 300 }}>
 		<h1>Herlig! 🥳</h1>
 		<p class="subtitle">
 			Nå trenger vi litt mer informasjon om {companyName}. Svar kort og konkret, så får vi satt opp en god profil.
 		</p>
 
 		{#each answers as answer, i (i)}
-			<div class="qa-block">
+			<div class="qa-block" in:slide={{ duration: 500 }}>
 				<p>{questions[i]}</p>
 				<p><strong>{answer}</strong></p>
 			</div>
 		{/each}
 
 		{#if !isDone}
-			<div class="qa-block">
+			<div class="qa-block" in:slide={{ duration: 500 }}>
 				<p>{questions[step]}</p>
 				<form on:submit={handleNext}>
 					<ArrowInput
