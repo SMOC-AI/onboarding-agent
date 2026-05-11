@@ -28,6 +28,7 @@
 	$: isDone = step >= questions.length;
 	$: isValid = isFilled(input);
 
+// Sender ferdige svar til backend endepunktet som oppretter company i Payload
 	async function submitOnboarding(collectedAnswers: string[]) {
 		const payload = {
 			companyName: companyName.trim(),
@@ -51,6 +52,7 @@
 		}
 	}
 
+// Legger til ett svar av gangen, på siste spørsmål trigges innsending
 	async function handleNext(event: SubmitEvent) {
 		event.preventDefault();
 		if (!isValid) return;

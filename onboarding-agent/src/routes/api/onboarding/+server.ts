@@ -10,6 +10,7 @@ interface OnboardingRequest {
 	answers: OnboardingAnswer[];
 }
 
+// Lager en stabil key som matcher forventet format i Payload, generert av AI
 function toCompanyKey(value: string): string {
 	return value
 		.toLowerCase()
@@ -21,6 +22,7 @@ function toCompanyKey(value: string): string {
 		.slice(0, 80);
 }
 
+// Runtime validation av request body før det sendes videre til Payload
 function isValidOnboardingRequest(body: unknown): body is OnboardingRequest {
 	if (!body || typeof body !== 'object') return false;
 
@@ -42,6 +44,7 @@ function isValidOnboardingRequest(body: unknown): body is OnboardingRequest {
 
 export async function POST({ request, platform }: { request: Request; platform: App.Platform | undefined }) {
 	const env = platform?.env as Record<string, string | undefined> | undefined;
+	// Cloudflare service binding mot payload worker
 	const payloadService = env?.PAYLOAD_SERVICE as Fetcher | undefined;
 
 	if (!payloadService) {
@@ -78,6 +81,7 @@ export async function POST({ request, platform }: { request: Request; platform: 
 		);
 	}
 
+	// Mapper onboarding data til feltene som companies collectionen forventer
 	const title = body.companyName.trim();
 	const key = toCompanyKey(title);
 	const companyPayload = {
@@ -87,6 +91,7 @@ export async function POST({ request, platform }: { request: Request; platform: 
 	};
 
 	try {
+		// Service bindings bruker intern URL, path håndteres av target worker
 		const serviceRequest = new Request('https://internal/api/companies', {
 			method: 'POST',
 			headers: {

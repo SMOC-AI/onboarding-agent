@@ -7,6 +7,7 @@
 	let companyName = '';
 	$: isValid = isFilled(companyName, 2);
 
+	// Lagrer companyName i query param til neste side
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		if (!isValid) return;
