@@ -10,6 +10,17 @@ interface OnboardingRequest {
 	answers: OnboardingAnswer[];
 }
 
+function toCompanyKey(value: string): string {
+	return value
+		.toLowerCase()
+		.normalize('NFKD')
+		.replace(/[^\w\s-]/g, '')
+		.trim()
+		.replace(/[\s_-]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.slice(0, 80);
+}
+
 function isValidOnboardingRequest(body: unknown): body is OnboardingRequest {
 	if (!body || typeof body !== 'object') return false;
 
@@ -31,14 +42,13 @@ function isValidOnboardingRequest(body: unknown): body is OnboardingRequest {
 
 export async function POST({ request, platform }: { request: Request; platform: App.Platform | undefined }) {
 	const env = platform?.env as Record<string, string | undefined> | undefined;
-	const payloadBaseUrl = env?.PAYLOAD_BASE_URL;
-	const payloadApiToken = env?.PAYLOAD_API_TOKEN;
+	const payloadService = env?.PAYLOAD_SERVICE as Fetcher | undefined;
 
-	if (!payloadBaseUrl || !payloadApiToken) {
+	if (!payloadService) {
 		return json(
 			{
 				ok: false,
-				error: 'mangler PAYLOAD_BASE_URL eller PAYLOAD_API_TOKEN i worker secrets'
+				error: 'mangler PAYLOAD_SERVICE i worker config'
 			},
 			{ status: 500 }
 		);
@@ -68,40 +78,29 @@ export async function POST({ request, platform }: { request: Request; platform: 
 		);
 	}
 
-	let payloadStatus = 0;
-	let payloadResponseBody: unknown = null;
-	let payloadRawText = '';
+	const title = body.companyName.trim();
+	const key = toCompanyKey(title);
+	const companyPayload = {
+		companyId: crypto.randomUUID(),
+		title,
+		key
+	};
 
 	try {
-		const response = await fetch(payloadBaseUrl, {
+		const serviceRequest = new Request('https://internal/api/companies', {
 			method: 'POST',
 			headers: {
-				'content-type': 'application/json',
-				authorization: `Bearer ${payloadApiToken}`
+				'content-type': 'application/json'
 			},
-			body: JSON.stringify(body)
+			body: JSON.stringify(companyPayload)
 		});
-		payloadStatus = response.status;
-
-		payloadRawText = await response.text();
-		try {
-			payloadResponseBody = payloadRawText ? JSON.parse(payloadRawText) : { note: 'payload svarte uten body' };
-		} catch {
-			payloadResponseBody = {
-				note: 'payload svarte uten json body',
-				rawPreview: payloadRawText.slice(0, 200)
-			};
-		}
+		const response = await payloadService.fetch(serviceRequest);
 
 		if (!response.ok) {
 			return json(
 				{
 					ok: false,
-					error: 'payload returnerte feilstatus',
-					payloadBaseUrlUsed: payloadBaseUrl,
-					payloadStatus,
-					payloadResponseBody,
-					payloadRawPreview: payloadRawText.slice(0, 200)
+					error: 'payload returnerte feilstatus'
 				},
 				{ status: 502 }
 			);
@@ -118,9 +117,6 @@ export async function POST({ request, platform }: { request: Request; platform: 
 
 	return json({
 		ok: true,
-		message: 'onboarding api forwardet payload request',
-		payloadBaseUrlUsed: payloadBaseUrl,
-		payloadStatus,
-		payloadResponseBody
+		message: 'onboarding api opprettet company i payload'
 	});
 }

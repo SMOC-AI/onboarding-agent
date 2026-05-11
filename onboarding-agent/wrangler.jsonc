@@ -18,6 +18,13 @@
 	"observability": {
 		"enabled": true
 	},
+	"services": [
+		{
+			"binding": "PAYLOAD_SERVICE",
+			"service": "smoc-payload-production",
+			"entrypoint": "default"
+		}
+	],
 	"upload_source_maps": true
 	/**
 	 * Smart Placement
