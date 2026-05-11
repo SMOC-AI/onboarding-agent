@@ -1,5 +1,34 @@
 import { json } from '@sveltejs/kit';
 
+interface OnboardingAnswer {
+	question: string;
+	answer: string;
+}
+
+interface OnboardingRequest {
+	companyName: string;
+	answers: OnboardingAnswer[];
+}
+
+function isValidOnboardingRequest(body: unknown): body is OnboardingRequest {
+	if (!body || typeof body !== 'object') return false;
+
+	const candidate = body as Partial<OnboardingRequest>;
+
+	if (typeof candidate.companyName !== 'string') return false;
+	if (candidate.companyName.trim().length < 2) return false;
+	if (!Array.isArray(candidate.answers) || candidate.answers.length === 0) return false;
+
+	return candidate.answers.every(
+		(entry) =>
+			entry &&
+			typeof entry.question === 'string' &&
+			entry.question.trim().length > 0 &&
+			typeof entry.answer === 'string' &&
+			entry.answer.trim().length > 0
+	);
+}
+
 export async function POST({ request, platform }: { request: Request; platform: App.Platform | undefined }) {
 	const env = platform?.env as Record<string, string | undefined> | undefined;
 	const payloadBaseUrl = env?.PAYLOAD_BASE_URL;
@@ -24,6 +53,16 @@ export async function POST({ request, platform }: { request: Request; platform: 
 			{
 				ok: false,
 				error: 'request body må være gyldig json'
+			},
+			{ status: 400 }
+		);
+	}
+
+	if (!isValidOnboardingRequest(body)) {
+		return json(
+			{
+				ok: false,
+				error: 'ugyldig payload: krever companyName og minst ett gyldig spørsmål/svar'
 			},
 			{ status: 400 }
 		);
