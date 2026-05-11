@@ -21,18 +21,56 @@
 	let step = 0;
 	let input = '';
 	let answers: string[] = [];
+	let submitError = '';
+	let submitSuccess = false;
 
 	$: companyName = page.url.searchParams.get('companyName') || 'selskapet deres';
 	$: isDone = step >= questions.length;
 	$: isValid = isFilled(input);
 
-	function handleNext(event: SubmitEvent) {
+	async function submitOnboarding(collectedAnswers: string[]) {
+		const payload = {
+			companyName: companyName.trim(),
+			answers: questions.map((question, index) => ({
+				question,
+				answer: collectedAnswers[index]
+			}))
+		};
+
+		const response = await fetch('/api/onboarding', {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json'
+			},
+			body: JSON.stringify(payload)
+		});
+
+		if (!response.ok) {
+			const data = (await response.json().catch(() => ({}))) as { error?: string };
+			throw new Error(data.error || 'Klarte ikke å sende onboarding data');
+		}
+	}
+
+	async function handleNext(event: SubmitEvent) {
 		event.preventDefault();
 		if (!isValid) return;
+
+		submitError = '';
+		submitSuccess = false;
+		const isLastQuestion = step === questions.length - 1;
 
 		answers = [...answers, input.trim()];
 		step += 1;
 		input = '';
+
+		if (!isLastQuestion) return;
+
+		try {
+			await submitOnboarding(answers);
+			submitSuccess = true;
+		} catch (err) {
+			submitError = err instanceof Error ? err.message : 'Ukjent feil';
+		}
 	}
 </script>
 
@@ -66,8 +104,11 @@
 				</form>
 			</div>
 		{:else}
-			<!-- TODO: Lag et bedre svar som  viser at infoen er lagret og at bruker vil bli kontaktet-->
-			<p>Takk for svar!</p>
+			{#if submitError}
+				<p>Noe gikk galt: {submitError}</p>
+			{:else if submitSuccess}
+				<p>Takk for svar! Dataen er sendt videre</p>
+			{/if}
 		{/if}
 	</div>
 </section>
