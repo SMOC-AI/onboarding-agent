@@ -70,6 +70,7 @@ export async function POST({ request, platform }: { request: Request; platform: 
 
 	let payloadStatus = 0;
 	let payloadResponseBody: unknown = null;
+	let payloadRawText = '';
 
 	try {
 		const response = await fetch(payloadBaseUrl, {
@@ -82,10 +83,14 @@ export async function POST({ request, platform }: { request: Request; platform: 
 		});
 		payloadStatus = response.status;
 
+		payloadRawText = await response.text();
 		try {
-			payloadResponseBody = await response.json();
+			payloadResponseBody = payloadRawText ? JSON.parse(payloadRawText) : { note: 'payload svarte uten body' };
 		} catch {
-			payloadResponseBody = { note: 'payload svarte uten json body' };
+			payloadResponseBody = {
+				note: 'payload svarte uten json body',
+				rawPreview: payloadRawText.slice(0, 200)
+			};
 		}
 
 		if (!response.ok) {
@@ -93,8 +98,10 @@ export async function POST({ request, platform }: { request: Request; platform: 
 				{
 					ok: false,
 					error: 'payload returnerte feilstatus',
+					payloadBaseUrlUsed: payloadBaseUrl,
 					payloadStatus,
-					payloadResponseBody
+					payloadResponseBody,
+					payloadRawPreview: payloadRawText.slice(0, 200)
 				},
 				{ status: 502 }
 			);
@@ -112,6 +119,7 @@ export async function POST({ request, platform }: { request: Request; platform: 
 	return json({
 		ok: true,
 		message: 'onboarding api forwardet payload request',
+		payloadBaseUrlUsed: payloadBaseUrl,
 		payloadStatus,
 		payloadResponseBody
 	});
