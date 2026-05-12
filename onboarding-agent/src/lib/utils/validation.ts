@@ -1,6 +1,24 @@
-// Dette er en shared validation helper for (per nå) enkle minimum character checks,
-// som kan potensielt  utvides med strengere validation for backend senere.
+// Shared validation helper
 
-export function isFilled(value: string, minLength = 1): boolean {
-	return value.trim().length >= minLength;
+interface TextValidationOptions {
+	fieldLabel?: string;
+	minLength?: number;
+	maxLength?: number;
+}
+
+export function validateText(
+	value: string,
+	{ fieldLabel = 'Feltet', minLength = 1, maxLength }: TextValidationOptions = {}
+): string {
+	const trimmed = value.trim();
+
+	if (trimmed.length < minLength) {
+		return `${fieldLabel} må være minst ${minLength} tegn.`;
+	}
+
+	if (maxLength && trimmed.length > maxLength) {
+		return `${fieldLabel} kan ikke være mer enn ${maxLength} tegn.`;
+	}
+
+	return '';
 }
