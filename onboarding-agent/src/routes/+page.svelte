@@ -2,15 +2,23 @@
 	import { goto } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import ArrowInput from '$lib/components/ArrowInput.svelte';
-	import { isFilled } from '$lib/utils/validation';
+	import { validateText } from '$lib/utils/validation';
 
 	let companyName = '';
-	$: isValid = isFilled(companyName, 2);
+	let triedSubmit = false;
+
+	$: companyNameError = validateText(companyName, {
+		fieldLabel: 'Selskapsnavn',
+		minLength: 2,
+		maxLength: 80
+	});
+	$: showCompanyNameError = !!companyNameError && triedSubmit;
 
 	// Lagrer companyName i query param til neste side
 	function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
-		if (!isValid) return;
+		triedSubmit = true;
+		if (companyNameError) return;
 
 		const name = encodeURIComponent(companyName.trim());
 		goto(`/sporsmal?companyName=${name}`);
@@ -27,12 +35,13 @@
 		<h1>Hei, hyggelig å møte deg! <br/>La oss bli kjent.</h1>
 		<p class="subtitle">Skal vi starte med navn?😉</p>
 
-		<form on:submit={handleSubmit}>
+		<form on:submit={handleSubmit} novalidate>
 			<ArrowInput
 				name="companyName"
+				inputId="company-name"
 				placeholder="Navn på selskapet"
 				minLength={2}
-				disabled={!isValid}
+				error={showCompanyNameError ? companyNameError : ''}
 				bind:value={companyName}
 			/>
 		</form>
