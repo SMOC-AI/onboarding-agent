@@ -28,7 +28,7 @@ export function isValidOnboardingRequest(body: unknown): body is OnboardingReque
 
 	if (typeof candidate.companyName !== 'string') return false;
 	if (candidate.companyName.trim().length < 2) return false;
-	if (!Array.isArray(candidate.answers) || candidate.answers.length === 0) return false;
+	if (!Array.isArray(candidate.answers) || candidate.answers.length < 8) return false;
 
 	return candidate.answers.every(
 		(entry) =>
@@ -41,31 +41,47 @@ export function isValidOnboardingRequest(body: unknown): body is OnboardingReque
 }
 
 // Mapper onboarding data til feltene som companies collectionen forventer
-function mapToCompanyPayload(body: OnboardingRequest) {
+function mapToCompanyPayload(companyId: string, body: OnboardingRequest) {
 	const title = body.companyName.trim();
 	const key = toCompanyKey(title);
 
 	return {
-		companyId: crypto.randomUUID(),
+		companyId,
 		title,
 		key
 	};
 }
 
-// Sender company data til payload via cloudflare service binding
-export async function createCompanyInPayload(
-	payloadService: Fetcher,
-	body: OnboardingRequest
-): Promise<'payload-error' | 'network-error' | 'ok'> {
-	const companyPayload = mapToCompanyPayload(body);
+function mapToCompanyAssetsPayload(companyId: string, body: OnboardingRequest) {
+	const values = body.answers.map((entry) => entry.answer.trim());
 
+	return {
+		companyId,
+		basics: {
+			productsYouSell: values[0] ?? '',
+			targetCustomer: values[1] ?? '',
+			idealCustomer: values[2] ?? '',
+			regularCustomerLast6Months: values[3] ?? '',
+			customerMotivations: values[4] ?? '',
+			excludeAudiences: values[5] ?? '',
+			uniqueSellingPoints: values[6] ?? '',
+			salesProcessToday: values[7] ?? ''
+		}
+	};
+}
+
+async function postToPayload(
+	payloadService: Fetcher,
+	path: string,
+	data: unknown
+): Promise<'ok' | 'payload-error' | 'network-error'> {
 	try {
-		const serviceRequest = new Request('https://internal/api/companies', {
+		const serviceRequest = new Request(`https://internal${path}`, {
 			method: 'POST',
 			headers: {
 				'content-type': 'application/json'
 			},
-			body: JSON.stringify(companyPayload)
+			body: JSON.stringify(data)
 		});
 
 		const response = await payloadService.fetch(serviceRequest);
@@ -73,4 +89,24 @@ export async function createCompanyInPayload(
 	} catch {
 		return 'network-error';
 	}
+}
+
+// Sender company + company assets (spørsmål og svar) til payload via cloudflare service binding
+export async function createOnboardingInPayload(
+	payloadService: Fetcher,
+	body: OnboardingRequest
+): Promise<'payload-error' | 'network-error' | 'ok'> {
+	const companyId = crypto.randomUUID();
+	const companyPayload = mapToCompanyPayload(companyId, body);
+	const companyAssetsPayload = mapToCompanyAssetsPayload(companyId, body);
+
+	const companyResult = await postToPayload(payloadService, '/api/companies', companyPayload);
+	if (companyResult !== 'ok') return companyResult;
+
+	const assetsResult = await postToPayload(payloadService, '/api/company-assets', companyAssetsPayload);
+	if (assetsResult !== 'ok') {
+		return assetsResult;
+	}
+
+	return 'ok';
 }

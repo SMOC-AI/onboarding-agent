@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { createCompanyInPayload, isValidOnboardingRequest } from '$lib/server/onboarding-agent';
+import { createOnboardingInPayload, isValidOnboardingRequest } from '$lib/server/onboarding-agent';
 
 export async function POST({ request, platform }: { request: Request; platform: App.Platform | undefined }) {
 	const env = platform?.env as Record<string, string | undefined> | undefined;
@@ -34,13 +34,13 @@ export async function POST({ request, platform }: { request: Request; platform: 
 		return json(
 			{
 				ok: false,
-				error: 'ugyldig payload: krever companyName og minst ett gyldig spørsmål/svar'
+				error: 'ugyldig payload: krever companyName og alle gyldige spørsmål/svar'
 			},
 			{ status: 400 }
 		);
 	}
 
-	const result = await createCompanyInPayload(payloadService, body);
+	const result = await createOnboardingInPayload(payloadService, body);
 
 	if (result === 'payload-error') {
 		return json(
@@ -64,6 +64,6 @@ export async function POST({ request, platform }: { request: Request; platform: 
 
 	return json({
 		ok: true,
-		message: 'onboarding api opprettet company i payload'
+		message: 'onboarding api opprettet company og company assets i payload'
 	});
 }
