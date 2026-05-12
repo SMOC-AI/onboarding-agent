@@ -25,6 +25,9 @@
 			"entrypoint": "default"
 		}
 	],
+	"vars": {
+		"PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_bWFnaWNhbC10dXJ0bGUtNDguY2xlcmsuYWNjb3VudHMuZGV2JA"
+	},
 	"upload_source_maps": true
 	/**
 	 * Smart Placement
