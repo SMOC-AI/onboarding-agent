@@ -63,7 +63,7 @@ function mapToCompanyAssetsPayload(companyId: string, body: OnboardingRequest) {
 			idealCustomer: values[2] ?? '',
 			regularCustomerLast6Months: values[3] ?? '',
 			customerMotivations: values[4] ?? '',
-			excludeAudiences: values[5] ?? '',
+			excludedAudiences: values[5] ?? '',
 			uniqueSellingPoints: values[6] ?? '',
 			salesProcessToday: values[7] ?? ''
 		}
