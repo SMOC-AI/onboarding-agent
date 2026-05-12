@@ -1,7 +1,26 @@
 import { json } from '@sveltejs/kit';
 import { createOnboardingInPayload, isValidOnboardingRequest } from '$lib/server/onboarding-agent';
 
-export async function POST({ request, platform }: { request: Request; platform: App.Platform | undefined }) {
+export async function POST({
+	request,
+	platform,
+	locals
+}: {
+	request: Request;
+	platform: App.Platform | undefined;
+	locals: App.Locals;
+}) {
+	// API skal kun kunne kalles av innloggede brukere
+	if (!locals.session) {
+		return json(
+			{
+				ok: false,
+				error: 'du må være logget inn for å gå videre'
+			},
+			{ status: 401 }
+		);
+	}
+
 	const env = platform?.env as Record<string, string | undefined> | undefined;
 	// Cloudflare service binding mot payload worker
 	const payloadService = env?.PAYLOAD_SERVICE as Fetcher | undefined;
